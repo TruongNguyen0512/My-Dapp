@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
+const { v4: uuidv4 } = require('uuid');
 
 const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  walletAddress: { type: String, unique: true }, // Địa chỉ ví MetaMask
+  userId: { type: String, default: uuidv4, unique: true }, // Mã định danh người dùng (UUID)
+  walletAddress: { type: String, required: true, unique: true }, // Địa chỉ ví MetaMask
+  tokens: { type: Number, default: 0 }, // Số lượng token hiện có
   createdAt: { type: Date, default: Date.now }
 });
 

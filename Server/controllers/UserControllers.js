@@ -1,18 +1,27 @@
 // controllers/UserController.js
 const User = require('../models/User');
+const { v4: uuidv4 } = require('uuid');
 
 // Tạo người dùng mới
 const createUser = async (req, res) => {
   try {
-    const { name, email } = req.body;
-    const account = req.body.account.toLowerCase();
+    const { walletAddress, name } = req.body;
 
-    let user = await User.findOne({ walletAddress: account });
+    // Kiểm tra xem người dùng với địa chỉ ví đã tồn tại chưa
+    let user = await User.findOne({ walletAddress: walletAddress.toLowerCase() });
     if (user) {
       return res.status(400).send({ error: 'User already exists' });
     }
 
-    user = new User({ walletAddress: account, name, email });
+    // Tạo người dùng mới với các thông tin cần thiết
+    user = new User({
+      userId: uuidv4(), // Tạo mã định danh người dùng mới
+      walletAddress: walletAddress.toLowerCase(),
+      name,
+      tokens: 0 // Khởi tạo số lượng token là 0
+    });
+
+    // Lưu người dùng mới vào cơ sở dữ liệu
     await user.save();
 
     res.status(201).send(user);
