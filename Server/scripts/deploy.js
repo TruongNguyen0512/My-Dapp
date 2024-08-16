@@ -1,21 +1,31 @@
-const { ethers } = require("hardhat");
+const fs = require('fs');
+const path = require('path');
 
 async function main() {
   const [deployer] = await ethers.getSigners();
-
   console.log("Deploying contracts with the account:", deployer.address);
 
+  // Deploy FitnessToken contract
   const FitnessToken = await ethers.getContractFactory("FitnessToken");
   const fitnessToken = await FitnessToken.deploy(deployer.address);
-  await fitnessToken.waitForDeployment(); // Chờ giao dịch triển khai hoàn thành
+  await fitnessToken.deployed();
+  console.log("FitnessToken deployed to:", fitnessToken.address);
 
-  console.log("FitnessToken deployed to:", await fitnessToken.getAddress());
-
+  // Deploy FitnessApp contract with FitnessToken's address
   const FitnessApp = await ethers.getContractFactory("FitnessApp");
-  const fitnessApp = await FitnessApp.deploy(await fitnessToken.getAddress());
-  await fitnessApp.waitForDeployment(); // Chờ giao dịch triển khai hoàn thành
+  const fitnessApp = await FitnessApp.deploy(fitnessToken.address);
+  await fitnessApp.deployed();
+  console.log("FitnessApp deployed to:", fitnessApp.address);
 
-  console.log("FitnessApp deployed to:", await fitnessApp.getAddress());
+  // Save contract addresses to config file
+  const configFilePath = path.join(__dirname, '..', 'config', 'contracts-config.json');
+  const config = {
+    FitnessToken: fitnessToken.address,
+    FitnessApp: fitnessApp.address
+  };
+
+  fs.writeFileSync(configFilePath, JSON.stringify(config, null, 2));
+  console.log("Contract addresses have been saved to config file.");
 }
 
 main()
